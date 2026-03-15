@@ -1,0 +1,134 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "purpose": "Business logic definitions injected into AI prompt context. The AI must use these exact SQL expressions when the user references these concepts.",
+    "note": "All status/segment/plan comparisons use LOWER() — raw data has inconsistent casing."
+  },
+
+  "customer_segments": {
+    "churned_customer": {
+      "label": "Churned Customer",
+      "definition": "A customer who has placed no orders in the last 90 days",
+      "sql": "id NOT IN (SELECT DISTINCT customer_id FROM orders WHERE order_date >= CURRENT_DATE - INTERVAL '90 days' AND customer_id IS NOT NULL)",
+      "tags": ["churn", "retention", "critical"]
+    },
+    "active_customer": {
+      "label": "Active Customer",
+      "definition": "A customer who placed at least one order in the last 90 days",
+      "sql": "id IN (SELECT DISTINCT customer_id FROM orders WHERE order_date >= CURRENT_DATE - INTERVAL '90 days' AND customer_id IS NOT NULL)",
+      "tags": ["retention", "engagement"]
+    },
+    "at_risk_customer": {
+      "label": "At-Risk Customer",
+      "definition": "Previously active but no order in 45–90 days — likely to churn soon",
+      "sql": "id IN (SELECT DISTINCT customer_id FROM orders WHERE order_date < CURRENT_DATE - INTERVAL '45 days' AND order_date >= CURRENT_DATE - INTERVAL '90 days')",
+      "tags": ["churn-risk", "retention"]
+    },
+    "high_value_customer": {
+      "label": "High-Value Customer",
+      "definition": "Customer with total completed revenue greater than $500",
+      "sql": "lifetime_value > 500",
+      "tags": ["revenue", "priority", "upsell"]
+    },
+    "whale_customer": {
+      "label": "Whale Customer",
+      "definition": "Top-tier customer with lifetime value above $5,000 — VIP treatment required",
+      "sql": "lifetime_value > 5000",
+      "tags": ["vip", "enterprise", "revenue"]
+    },
+    "new_customer": {
+      "label": "New Customer",
+      "definition": "Customer who signed up in the last 30 days",
+      "sql": "signup_date >= CURRENT_DATE - INTERVAL '30 days'",
+      "tags": ["acquisition", "onboarding"]
+    }
+  },
+
+  "revenue_metrics": {
+    "mrr": {
+      "label": "MRR — Monthly Recurring Revenue",
+      "definition": "Sum of all completed order amounts in the current calendar month",
+      "sql": "SELECT SUM(amount) AS mrr FROM orders WHERE LOWER(status) = 'completed' AND DATE_TRUNC('month', order_date) = DATE_TRUNC('month', CURRENT_DATE)",
+      "tags": ["saas", "kpi", "revenue"]
+    },
+    "arr": {
+      "label": "ARR — Annual Recurring Revenue",
+      "definition": "MRR multiplied by 12",
+      "sql": "SELECT SUM(amount) * 12 AS arr FROM orders WHERE LOWER(status) = 'completed' AND DATE_TRUNC('month', order_date) = DATE_TRUNC('month', CURRENT_DATE)",
+      "tags": ["saas", "kpi", "revenue"]
+    },
+    "revenue_growth": {
+      "label": "Revenue Growth (MoM)",
+      "definition": "Month-over-month percentage change in completed order revenue",
+      "sql": "WITH m AS (SELECT DATE_TRUNC('month',order_date) mo, SUM(amount) rev FROM orders WHERE LOWER(status)='completed' GROUP BY 1) SELECT mo, rev, LAG(rev) OVER (ORDER BY mo) prev_rev, ROUND((rev - LAG(rev) OVER (ORDER BY mo)) / NULLIF(LAG(rev) OVER (ORDER BY mo),0)*100,2) AS growth_pct FROM m ORDER BY mo",
+      "tags": ["growth", "trending", "kpi"]
+    },
+    "aov": {
+      "label": "AOV — Average Order Value",
+      "definition": "Total completed revenue divided by number of completed orders",
+      "sql": "SELECT ROUND(SUM(amount)::NUMERIC / NULLIF(COUNT(*),0), 2) AS aov FROM orders WHERE LOWER(status) = 'completed'",
+      "tags": ["efficiency", "revenue"]
+    },
+    "net_revenue": {
+      "label": "Net Revenue",
+      "definition": "Gross revenue from completed orders minus payment gateway fees",
+      "sql": "SELECT SUM(o.amount) - COALESCE(SUM(p.gateway_fee),0) AS net_revenue FROM orders o LEFT JOIN payments p ON p.order_id = o.id WHERE LOWER(o.status) = 'completed'",
+      "tags": ["profitability", "net"]
+    }
+  },
+
+  "operational_metrics": {
+    "conversion_rate": {
+      "label": "Conversion Rate",
+      "definition": "Percentage of all orders with status = completed",
+      "sql": "SELECT ROUND(COUNT(*) FILTER (WHERE LOWER(status)='completed')::NUMERIC / NULLIF(COUNT(*),0) * 100, 2) AS conversion_rate_pct FROM orders",
+      "tags": ["funnel", "ops"]
+    },
+    "refund_rate": {
+      "label": "Refund Rate",
+      "definition": "Percentage of completed payments that resulted in a refund",
+      "sql": "SELECT ROUND(COUNT(*) FILTER (WHERE LOWER(status)='refunded')::NUMERIC / NULLIF(COUNT(*) FILTER (WHERE LOWER(status)='completed'),0) * 100, 2) AS refund_rate_pct FROM payments",
+      "tags": ["quality", "risk"]
+    },
+    "payment_failure_rate": {
+      "label": "Payment Failure Rate",
+      "definition": "Percentage of payment attempts that failed",
+      "sql": "SELECT ROUND(COUNT(*) FILTER (WHERE LOWER(status)='failed')::NUMERIC / NULLIF(COUNT(*),0) * 100, 2) AS failure_rate_pct FROM payments",
+      "tags": ["risk", "ops"]
+    }
+  },
+
+  "time_windows": {
+    "wow": "Compare DATE_TRUNC('week', CURRENT_DATE) vs DATE_TRUNC('week', CURRENT_DATE) - INTERVAL '1 week'",
+    "mom": "Compare DATE_TRUNC('month', CURRENT_DATE) vs DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '1 month'",
+    "yoy": "Compare EXTRACT(YEAR FROM CURRENT_DATE) vs EXTRACT(YEAR FROM CURRENT_DATE) - 1",
+    "last_30": "order_date >= CURRENT_DATE - INTERVAL '30 days'",
+    "last_90": "order_date >= CURRENT_DATE - INTERVAL '90 days'"
+  },
+
+  "data_quality_rules": {
+    "status_normalization": "Always use LOWER(status) for comparisons — raw data has Active, ACTIVE, active all meaning the same",
+    "region_normalization": "Always use LOWER(region) for comparisons — raw data has Europe, EUROPE, europe",
+    "plan_normalization": "Always use LOWER(plan) for comparisons — raw data has Pro, PRO, pro",
+    "nullable_fields": ["phone (~7% NULL)", "product_name (~4% NULL)", "gateway_fee (~8% NULL)"],
+    "always_use": "COALESCE(gateway_fee, 0) when summing fees; NULLIF(denominator, 0) to avoid division by zero"
+  },
+
+  "visualization_map": {
+    "time_series_single":   "line",
+    "time_series_multi":    "area",
+    "category_comparison":  "bar",
+    "ranking":              "horizontal_bar",
+    "part_of_whole":        "pie",
+    "distribution":         "histogram",
+    "correlation":          "scatter",
+    "single_number":        "metric_card",
+    "raw_data":             "table"
+  },
+
+  "schema_summary": {
+    "customers": "id, first_name, last_name, email, phone(nullable), region, segment, plan, status, signup_date, lifetime_value",
+    "orders": "id, customer_id(fk→customers), order_date, product_name(nullable), quantity, amount, discount_pct, status",
+    "payments": "id, order_id(fk→orders), method, status, payment_date, amount, gateway_fee(nullable)"
+  }
+}

@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+/* ── Design Tokens ──────────────────────────────────────────────────────── */
+:root {
+  --bg-primary:       #0B0F19;
+  --bg-secondary:     #0f1623;
+  --bg-card:          rgba(20, 28, 45, 0.75);
+  --bg-card-hover:    rgba(20, 28, 45, 0.95);
+  --accent-main:      #00F5D4;
+  --accent-secondary: #FFB703;
+  --accent-violet:    #7C3AED;
+  --text-main:        #E6EDF3;
+  --text-muted:       #8B949E;
+  --text-dim:         #4a5568;
+  --border:           rgba(0, 245, 212, 0.08);
+  --border-hover:     rgba(0, 245, 212, 0.25);
+  --glow-main:        rgba(0, 245, 212, 0.15);
+  --glow-amber:       rgba(255, 183, 3, 0.15);
+  --glow-red:         rgba(248, 113, 113, 0.15);
+  --shadow-card:      0 4px 32px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255,255,255,0.04) inset;
+  --font-sora:        var(--font-sora), system-ui, sans-serif;
+  --font-mono:        var(--font-mono), "JetBrains Mono", monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; background: var(--bg-primary); color: var(--text-main); }
+
+/* ── Global Typography ───────────────────────────────────────────────────── */
+body { font-family: var(--font-sora); }
+.font-mono, code, pre { font-family: var(--font-mono) !important; }
+
+/* ── Scrollbars ─────────────────────────────────────────────────────────── */
+::-webkit-scrollbar              { width: 3px; height: 3px; }
+::-webkit-scrollbar-track        { background: transparent; }
+::-webkit-scrollbar-thumb        { background: var(--accent-main); opacity: 0.3; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover  { background: var(--accent-main); opacity: 0.6; }
+
+/* ── Gradient mesh background ───────────────────────────────────────────── */
+.bg-mesh {
+  background-color: var(--bg-primary);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 20% -10%, rgba(0,245,212,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 80% 110%, rgba(124,58,237,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 60% 50%, rgba(255,183,3,0.04) 0%, transparent 70%);
+}
+
+/* ── Noise overlay ──────────────────────────────────────────────────────── */
+.noise::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 150px;
+  opacity: 0.4;
+}
+
+/* ── Glass card ─────────────────────────────────────────────────────────── */
+.glass {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+
+.glass-hover:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+}
+
+/* ── Glow effects ───────────────────────────────────────────────────────── */
+.glow-cyan   { box-shadow: 0 0 20px rgba(0,245,212,0.25), 0 0 60px rgba(0,245,212,0.08); }
+.glow-amber  { box-shadow: 0 0 20px rgba(255,183,3,0.25), 0 0 60px rgba(255,183,3,0.08); }
+.glow-red    { box-shadow: 0 0 20px rgba(248,113,113,0.25), 0 0 60px rgba(248,113,113,0.08); }
+.text-glow-cyan { text-shadow: 0 0 24px rgba(0,245,212,0.6); }
+
+/* ── Shimmer animation ───────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* ── Pulse ring ─────────────────────────────────────────────────────────── */
+@keyframes pulse-ring {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(1.4); }
+}
+.pulse-ring { animation: pulse-ring 1.5s ease-in-out infinite; }
+
+/* ── Scan line animation ─────────────────────────────────────────────────── */
+@keyframes scan { 0% { top: -4px; } 100% { top: 100%; } }
+
+/* ── Line clamp ─────────────────────────────────────────────────────────── */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Focus ring ─────────────────────────────────────────────────────────── */
+:focus-visible { outline: 1px solid rgba(0,245,212,0.6); outline-offset: 2px; }
+
+textarea { resize: none; }
+
+/* ── Cursor blink ───────────────────────────────────────────────────────── */
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.blink { animation: blink 0.9s step-end infinite; }

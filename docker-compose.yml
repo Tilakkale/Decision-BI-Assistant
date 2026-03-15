@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  # ── Local Postgres (mirrors Supabase schema) ──────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       decision_bi
+      POSTGRES_USER:     dibi_user
+      POSTGRES_PASSWORD: dibi_local_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./backend/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dibi_user -d decision_bi"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── FastAPI Backend ───────────────────────────────────────────────────────
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL:  postgresql://dibi_user:dibi_local_pass@postgres:5432/decision_bi
+      GROQ_API_KEY:  ${GROQ_API_KEY}
+      FRONTEND_URL:  http://localhost:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/app:/app/app   # hot-reload in dev
+
+  # ── Next.js Frontend ──────────────────────────────────────────────────────
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - backend
+
+volumes:
+  pg_data:
