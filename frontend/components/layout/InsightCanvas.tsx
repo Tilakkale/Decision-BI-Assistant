@@ -169,9 +169,9 @@ export default function InsightCanvas({ result, query }: Props) {
 
   const hasInsights = result.insights;
   const health = hasInsights?.health;
-  const narrative = hasInsights?.narrative;
-  const insights = hasInsights?.key_insights ?? [];
-  const confidence = hasInsights?.confidence;
+  const narrative = result.narrative;
+  const insights = result.insights?.health?.signals ?? [];
+  const confidence = result.confidence;
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -230,10 +230,10 @@ export default function InsightCanvas({ result, query }: Props) {
             className="grid grid-cols-4 gap-3">
             {health && <HealthGauge score={health.score} grade={health.grade} />}
             <StatCard label="Total / Sum"
-              value={result.summary?.total !== undefined ? Number(result.summary.total).toLocaleString() : undefined}
+              value={result.insights?.stats?.sum !== undefined ? Number(result.insights.stats.sum).toLocaleString() : undefined}
               loading={false} />
             <StatCard label="Average"
-              value={result.summary?.average !== undefined ? Number(result.summary.average).toFixed(2) : undefined}
+              value={result.insights?.stats?.mean !== undefined ? Number(result.insights.stats.mean).toFixed(2) : undefined}
               loading={false} />
             <StatCard label="Records"
               value={result.total_rows?.toLocaleString()}
@@ -241,7 +241,7 @@ export default function InsightCanvas({ result, query }: Props) {
           </motion.div>
 
           {/* Chart */}
-          {result.chart_type && result.rows?.length > 0 && (
+          {result.viz_type && result.rows && result.rows.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -254,7 +254,7 @@ export default function InsightCanvas({ result, query }: Props) {
               <ChartRenderer
                 rows={result.rows}
                 cols={result.columns ?? []}
-                type={result.chart_type}
+                type={result.viz_type}
                 config={result.chart_config}
               />
             </motion.div>
