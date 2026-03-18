@@ -14,10 +14,10 @@ interface Props {
 }
 
 const C = ["#00F5D4", "#FFB703", "#7C3AED", "#f87171", "#06b6d4", "#fb923c", "#a78bfa", "#34d399"];
-const GRID = { strokeDasharray: "3 3", stroke: "rgba(255,255,255,0.05)" };
+const GRID = { strokeDasharray: "3 3", stroke: "#334155" };
 const AXIS = {
-  tick:     { fill: "rgba(255,255,255,0.3)", fontSize: 10, fontFamily: "var(--font-mono)", fontWeight: 600 },
-  axisLine: { stroke: "rgba(255,255,255,0.07)" },
+  tick:     { fill: "var(--text-dim)", fontSize: 10, fontFamily: "var(--font-mono)", fontWeight: 600 },
+  axisLine: { stroke: "var(--border)" },
   tickLine: false as any,
 };
 
@@ -25,8 +25,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
     <div style={{
-      background: "rgba(11,15,25,0.95)",
-      border: "1px solid rgba(0,245,212,0.2)",
+      background: "var(--bg-card)",
+      border: "1px solid var(--border)",
       borderRadius: 10,
       padding: "8px 12px",
       fontSize: 11,
@@ -59,7 +59,7 @@ function trunc(v: any, n = 12) {
   return s.length > n ? s.slice(0, n) + "…" : s;
 }
 
-const LEGEND_STYLE = { fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.4)" };
+const LEGEND_STYLE = { fontSize: 10, fontWeight: 700, color: "var(--text-dim)" };
 
 export default function ChartRenderer({ rows, cols, type, config }: Props) {
   if (!rows.length || !cols.length) {
@@ -74,6 +74,30 @@ export default function ChartRenderer({ rows, cols, type, config }: Props) {
   const { xCol, yCols } = detect(cols, config);
   const data = rows.slice(0, 100);
   const H    = 240;
+
+  if (data.length === 1) {
+    const vCol = yCols[0] ?? cols[1] ?? cols[0];
+    const val = data[0][vCol];
+    return (
+      <div className="flex flex-col items-center justify-center w-full min-h-[240px] rounded-xl"
+        style={{ 
+          background: "linear-gradient(145deg, rgba(34,211,238,0.05) 0%, rgba(0,0,0,0) 100%)",
+          border: "1px solid rgba(34,211,238,0.15)",
+          boxShadow: "0 0 30px rgba(34,211,238,0.05) inset"
+        }}>
+        <div className="text-[11px] font-bold uppercase tracking-[0.2em] mb-3" style={{ color: "var(--text-dim)" }}>
+          {vCol}
+        </div>
+        <div className="text-5xl font-black tracking-tight" style={{ color: "var(--text-main)", fontFamily: "var(--font-mono)", textShadow: "0 0 24px rgba(34,211,238,0.4)" }}>
+          {typeof val === 'number' ? val.toLocaleString() : val}
+        </div>
+        <div className="text-[13px] font-medium mt-3" style={{ color: "var(--accent-main)" }}>
+          {data[0][xCol]}
+        </div>
+      </div>
+    );
+  }
+
   const t    = (type ?? "bar").toLowerCase();
   const TIP  = <CustomTooltip />;
 
@@ -109,8 +133,8 @@ export default function ChartRenderer({ rows, cols, type, config }: Props) {
           <defs>
             {yCols.map((c, i) => (
               <linearGradient key={c} id={`ag${i}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor={C[i]} stopOpacity={0.3} />
-                <stop offset="95%" stopColor={C[i]} stopOpacity={0.01} />
+                <stop offset="5%"  stopColor={i === 0 ? "#22d3ee" : C[i]} stopOpacity={0.4} />
+                <stop offset="95%" stopColor={i === 0 ? "#22d3ee" : C[i]} stopOpacity={0.0} />
               </linearGradient>
             ))}
           </defs>

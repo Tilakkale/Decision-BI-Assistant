@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Papa from "papaparse";
 import { QueryResult } from "@/lib/types";
 import ChartRenderer from "@/components/charts/ChartRenderer";
 import HealthGauge   from "@/components/ui/HealthGauge";
@@ -130,6 +131,21 @@ function DataTable({ rows, cols }: { rows: Record<string, any>[]; cols: string[]
 export default function InsightCanvas({ result, query }: Props) {
   const [showSQL, setShowSQL] = useState(false);
 
+  const downloadCSV = () => {
+    if (!result?.rows?.length) return;
+    const csv = Papa.unparse(result.rows, { header: true });
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const safeName = (query || "data-export").replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+    link.download = `${safeName}-${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   /* Empty state */
   if (!result) {
     return (
@@ -190,6 +206,19 @@ export default function InsightCanvas({ result, query }: Props) {
           </p>
         </div>
         <div className="flex items-center gap-3 ml-3 flex-shrink-0">
+          {result.rows && result.rows.length > 0 && (
+            <button onClick={downloadCSV}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-[10px] font-bold hover:scale-105"
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid var(--border)",
+                color: "var(--text-main)",
+              }}
+              title="Download chart data as CSV">
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>
+              CSV
+            </button>
+          )}
           {result.healed && (
             <span className="text-[10px] font-bold px-2 py-1 rounded-md"
               style={{ background: "rgba(255,183,3,0.1)", color: "var(--accent-secondary)", border: "1px solid rgba(255,183,3,0.2)" }}>
@@ -246,7 +275,7 @@ export default function InsightCanvas({ result, query }: Props) {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
-              className="glass rounded-2xl p-4">
+              className="glass rounded-2xl p-4 h-[400px]">
               <div className="text-[10px] font-bold uppercase tracking-[0.22em] mb-3"
                 style={{ color: "var(--text-dim)" }}>
                 Visualization

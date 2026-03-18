@@ -82,11 +82,18 @@ for _ in range(N_CUSTOMERS):
     status  = random.choice(STATUSES)
     ltv     = round(max(0, random.expovariate(1/380)), 2)
 
+    # Risk score logic
+    base_risk = random.randint(10, 50)
+    if "churn" in status.lower(): base_risk += 40
+    if "enterprise" in segment.lower(): base_risk -= 15
+    ai_risk_score = min(100, max(0, base_risk + random.randint(-15, 15)))
+
     # Whale customers (~2%)
     if random.random() < 0.02:
         ltv = round(random.uniform(5000, 22000), 2)
+        ai_risk_score = max(0, ai_risk_score - 20)
 
-    customers.append((cid, fname, lname, email, phone, region, segment, plan, status, signup, ltv))
+    customers.append((cid, fname, lname, email, phone, region, segment, plan, status, signup, ltv, ai_risk_score))
 
 # ── ORDERS ────────────────────────────────────────────────────────────────────
 print("⟳ Generating orders...")
@@ -209,10 +216,10 @@ def build_seed():
     out = ["-- AUTO-GENERATED SEED — DO NOT EDIT BY HAND\n\n"]
 
     # Customers
-    cols_c = "id,first_name,last_name,email,phone,region,segment,plan,status,signup_date,lifetime_value"
+    cols_c = "id,first_name,last_name,email,phone,region,segment,plan,status,signup_date,lifetime_value,ai_risk_score"
     rows_c = [f"({sql_str(r[0])},{sql_str(r[1])},{sql_str(r[2])},{sql_str(r[3])},{sql_str(r[4])},"
               f"{sql_str(r[5])},{sql_str(r[6])},{sql_str(r[7])},{sql_str(r[8])},{sql_str(str(r[9]))},"
-              f"{sql_num(r[10])})" for r in customers]
+              f"{sql_num(r[10])},{r[11]})" for r in customers]
     for i in range(0, len(rows_c), 200):
         out.append(f"INSERT INTO customers ({cols_c}) VALUES\n")
         out.append(",\n".join(rows_c[i:i+200]) + ";\n\n")

@@ -81,7 +81,8 @@ export function useSSEStream(
           }
         }
       }
-    } catch (err: any) {
+    } catch (error) {
+      const err = error as Error;
       if (err.name !== "AbortError") {
         setError(err.message ?? "Stream failed");
         setStreaming(false);

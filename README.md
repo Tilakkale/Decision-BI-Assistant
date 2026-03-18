@@ -35,7 +35,7 @@
                                │ POST /api/query (SSE stream)
                                ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  FASTAPI — Render                                           │
+│  FASTAPI — Railway                                          │
 │                                                             │
 │  ① NL Question → PII Mask                                  │
 │  ② SQLAgent → Groq Llama-3 (schema + dictionary.json)      │
@@ -185,13 +185,13 @@ This query joins multiple concepts from `dictionary.json` and exercises the LOWE
 
 ## Deployment
 
-### Backend → Render (free tier)
+### Backend → Railway
 
 1. Push to GitHub
-2. [render.com](https://render.com) → New → Web Service
+2. [railway.app](https://railway.app) → New Project → Deploy from GitHub
 3. **Root Directory:** `backend`
-4. **Build command:** `pip install -r requirements.txt`
-5. **Start command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+4. **Build:** Handled automatically via `railway.json` and Nixpacks
+5. **Start:** Railway detects `Procfile` and `uvicorn`
 6. Environment variables:
    - `DATABASE_URL` — your Supabase connection string
    - `GROQ_API_KEY` — your Groq key
@@ -202,13 +202,13 @@ This query joins multiple concepts from `dictionary.json` and exercises the LOWE
 ```bash
 cd frontend
 npx vercel --prod
-# Set NEXT_PUBLIC_API_URL to your Render backend URL
+# Set NEXT_PUBLIC_API_URL to your Railway backend URL
 ```
 
 ### Database → Supabase
 - Already set up in Step 2
 - Free tier: 500MB, sufficient for this project
-- Use **Transaction mode (port 6543)** in DATABASE_URL for Render compatibility
+- Use **Transaction mode (port 6543)** in DATABASE_URL for Railway compatibility
 
 ---
 
@@ -290,4 +290,4 @@ Frontend `useSSEStream` hook reads each event type and updates state in real tim
 
 ---
 
-*Stack: FastAPI · asyncpg · Groq Llama-3 · Next.js 14 · Recharts · Framer Motion · Supabase · Docker · Render · Vercel*
+*Stack: FastAPI · asyncpg · Groq Llama-3 · Next.js 14 · Recharts · Framer Motion · Supabase · Docker · Railway · Vercel*

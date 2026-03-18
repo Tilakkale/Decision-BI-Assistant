@@ -52,7 +52,9 @@ export default function ChatPanel({ onResult, onShowHistory, hasHistory }: Props
   const inputActive = streaming || !!error;
 
   return (
-    <div className="flex flex-col h-full" style={{ fontFamily: "var(--font-sora)" }}>
+    <div className="flex flex-col h-full bg-black/40 backdrop-blur-3xl overflow-hidden relative" style={{ fontFamily: "var(--font-sora)", borderRight: "1px solid rgba(255,255,255,0.05)", boxShadow: "inset -1px 0 20px rgba(0,245,212,0.03)" }}>
+      {/* ── Subtle top glow ─────────────────────────────────────── */}
+      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent shadow-[0_0_15px_rgba(0,245,212,0.4)] pointer-events-none" />
 
       {/* ── Header ───────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-5 py-4 border-b"

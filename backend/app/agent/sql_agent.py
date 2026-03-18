@@ -195,7 +195,7 @@ Rules:
 - Never mention SQL, databases, or technical details"""
 
         messages = [
-            {"role": "system", "content": "You are a Chief Revenue Officer writing a daily business briefing. Be specific, sharp, and data-driven."},
+            {"role": "system", "content": "You are a Senior Financial Analyst. Don't just say 'review the data.' Tell me if the revenue is healthy, highlight the top-performing category, and mention any outliers found by the Insight Engine."},
             {"role": "user",   "content": prompt},
         ]
         raw, _ = await self._call(messages)

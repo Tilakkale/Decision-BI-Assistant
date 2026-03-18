@@ -78,6 +78,12 @@
   },
 
   "operational_metrics": {
+    "ai_risk_rate": {
+      "label": "AI Risk Rate",
+      "definition": "Percentage of customers with an ai_risk_score greater than 70",
+      "sql": "SELECT ROUND(COUNT(*) FILTER (WHERE ai_risk_score > 70)::NUMERIC / NULLIF(COUNT(*),0) * 100, 2) AS ai_risk_rate_pct FROM customers",
+      "tags": ["risk", "ai", "churn"]
+    },
     "conversion_rate": {
       "label": "Conversion Rate",
       "definition": "Percentage of all orders with status = completed",
@@ -127,7 +133,7 @@
   },
 
   "schema_summary": {
-    "customers": "id, first_name, last_name, email, phone(nullable), region, segment, plan, status, signup_date, lifetime_value",
+    "customers": "id, first_name, last_name, email, phone(nullable), region, segment, plan, status, signup_date, lifetime_value, ai_risk_score",
     "orders": "id, customer_id(fk→customers), order_date, product_name(nullable), quantity, amount, discount_pct, status",
     "payments": "id, order_id(fk→orders), method, status, payment_date, amount, gateway_fee(nullable)"
   }
