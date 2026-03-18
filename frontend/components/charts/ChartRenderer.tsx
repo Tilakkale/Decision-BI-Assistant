@@ -49,7 +49,7 @@ function detect(cols: string[], cfg?: ChartConfig) {
     : cols.find(c => /date|month|week|year|region|name|product|segment|country|category|method/i.test(c)) ?? cols[0];
 
   const yNum = cfg?.y_axis && cols.includes(cfg.y_axis) ? [cfg.y_axis]
-    : cols.filter(c => c !== xCol && /amount|revenue|value|count|total|ltv|fee|sum|avg|price|qty|pct|rate/i.test(c));
+    : cols.filter(c => c !== xCol && /amount|revenue|value|count|total|ltv|fee|sum|avg|price|qty|pct|rate|score/i.test(c));
 
   return { xCol, yCols: yNum.length ? yNum : cols.filter(c => c !== xCol).slice(0, 3) };
 }
@@ -99,6 +99,9 @@ export default function ChartRenderer({ rows, cols, type, config }: Props) {
   }
 
   const t    = (type ?? "bar").toLowerCase();
+  
+  if (t === "table" || t === "raw_data") return null;
+
   const TIP  = <CustomTooltip />;
 
   if (t === "pie" || t === "donut") {

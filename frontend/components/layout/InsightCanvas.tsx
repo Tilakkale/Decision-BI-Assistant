@@ -270,7 +270,7 @@ export default function InsightCanvas({ result, query }: Props) {
           </motion.div>
 
           {/* Chart */}
-          {result.viz_type && result.rows && result.rows.length > 0 && (
+          {result.viz_type && result.viz_type !== "table" && result.rows && result.rows.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
