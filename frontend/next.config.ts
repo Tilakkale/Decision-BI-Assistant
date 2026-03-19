@@ -5,4 +5,4 @@ const nextConfig = {
     return [{ source: "/api/:path*", destination: `${api}/api/:path*` }];
   },
 };
-module.exports = nextConfig;
+export default nextConfig;
