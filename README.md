@@ -307,4 +307,28 @@ Frontend `useSSEStream` hook reads each event type and updates state in real tim
 
 ---
 
+## 📈 Lessons Learned & Best Practices
+
+### 1. Python Package Structure (`__init__.py`)
+*   **The Mistake**: Forgetting to add `__init__.py` files in backend subfolders.
+*   **The Lesson**: Always add an empty `__init__.py` to every folder inside your `app` directory. This tells Python's import system that these are packages, which is critical for tools like `uvicorn` and certain cloud environments to find your modules.
+
+### 2. Environment Variable Synchronization
+*   **The Mistake**: Missing or mismatched URLs in Vercel and Railway.
+*   **The Lesson**: 
+    *   **Vercel (`NEXT_PUBLIC_API_URL`)**: Must point to the **Railway** Production URL.
+    *   **Railway (`FRONTEND_URL`)**: Must point to the **Vercel** Production URL (for CORS security).
+    *   **Tip**: Always include `https://` in these URLs.
+
+### 3. Port Mapping & Start Commands
+*   **The Mistake**: A mismatch between the "Target Port" in Railway settings and the port used in the `uvicorn` start command.
+*   **The Lesson**: If you use the Railway `$PORT` variable in your start command, make sure the **Networking → Target Port** in Railway is **empty**. Alternatively, hardcode both to `8000`.
+
+### 4. Professional Frontend UX
+*   **Progress Indicators**: Always show the user that something is happening (steppers, typing effects).
+*   **Error Handling**: Instead of "Failed to fetch", show a user-friendly error message with a "Retry" button.
+*   **Data Visualization Strategy**: Choose the right chart (Line for trends, Bar for categories) and use interactive elements (tooltips).
+
+---
+
 *Stack: FastAPI · asyncpg · Groq Llama-3 · Next.js 14 · Recharts · Framer Motion · Supabase · Docker · Railway · Vercel*
