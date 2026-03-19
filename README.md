@@ -1,7 +1,11 @@
 # Decision Intelligence BI Assistant
-### Production-Grade AI SaaS · FastAPI · Next.js 14 · Supabase · Groq Llama-3
+### Production-Grade AI SaaS · FastAPI · Next.js · Supabase · Groq Llama-3
+
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-blue?style=for-the-badge&logo=vercel)](https://decision-bi-assistant.vercel.app)
 
 > Ask any business question in plain English. Get instant SQL, charts, statistical insights, and an AI narrative — all streamed live.
+
+![Dashboard Preview](screenshots/dashboard.png)
 
 ---
 
@@ -209,6 +213,19 @@ npx vercel --prod
 - Already set up in Step 2
 - Free tier: 500MB, sufficient for this project
 - Use **Transaction mode (port 6543)** in DATABASE_URL for Railway compatibility
+
+---
+
+## Technical Highlights (Recruiter FAQ)
+
+### How is the "Self-Healing" implemented?
+The backend maintains a retry loop. If `asyncpg` throws an error (e.g., "column does not exist"), the error message + the failed SQL are wrapped in a **Repair Prompt** and sent back to Groq. The AI identifies its own mistake, corrects the SQL, and the backend retries the execution.
+
+### How do you handle LLM Hallucinations in SQL?
+Beyond the self-healing loop, we use a **Semantic Dictionary (`dictionary.json`)**. This file acts as a "Source of Truth" for the AI, mapping common business terms (like "churned customer") to exact SQL snippets. This significantly reduces hallucinations and ensures the AI follows company-specific logic.
+
+### Why SSE instead of WebSockets?
+Server-Sent Events (SSE) provide a lighter, unidirectional stream from the server to the client. It's more efficient for ChatGPT-style responses where we only need to push updates (SQL typing, status steps, results) without the overhead of full duplex communication.
 
 ---
 
