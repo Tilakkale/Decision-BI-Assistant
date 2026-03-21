@@ -1,24 +1,22 @@
 # Decision Intelligence BI Assistant
-### Production-Grade AI SaaS · FastAPI · Next.js · Supabase · Groq Llama-3
+### FastAPI · Next.js · Supabase · Groq Llama-3
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-blue?style=for-the-badge&logo=vercel)](https://decision-bi-assistant.vercel.app)
 
-> Ask any business question in plain English. Get instant SQL, charts, statistical insights, and an AI narrative — all streamed live.
+> Ask business questions in plain English. Get SQL, charts, and statistical insights streamed live.
 
 ![Dashboard Preview](screenshots/dashboard.png)
 
 ---
 
-## Why This Project Stands Out
+## Features
 
-| Feature | What It Proves |
-|---|---|
-| **Agentic Self-Healing Loop** | AI systems fail. This one catches DB errors, sends the failed SQL back to the LLM, and auto-repairs — max 2 retries |
-| **Semantic Metadata Layer** | Real companies define "Revenue" differently. `dictionary.json` encodes business logic the AI uses to write precise SQL |
-| **PII Masking Layer** | Regex-based pre-processing strips emails, phones, and names before any data reaches the LLM |
-| **SSE Streaming Pipeline** | 6-step real-time stream: SQL typing effect, live stepper, non-blocking UX — just like ChatGPT |
-| **Statistical Insight Engine** | Auto-computes WoW growth, Z-score + IQR outlier detection, health score 0–100 |
-| **Safety Validator** | Blocks DROP/DELETE/UPDATE/INSERT + injection patterns before any SQL touches the DB |
+- **Agentic Self-Healing Loop**: Catches DB errors, sends the failed SQL back to the LLM, and auto-repairs (max 2 retries).
+- **Semantic Metadata Layer**: `dictionary.json` encodes business logic to help the LLM write precise SQL based on business definitions.
+- **PII Masking Layer**: Regex-based pre-processing strips emails, phones, and names before data reaches the LLM.
+- **SSE Streaming Pipeline**: Real-time stream providing a SQL typing effect, live stepper, and non-blocking UX.
+- **Statistical Insight Engine**: Auto-computes WoW growth, Z-score + IQR outlier detection, and a health score.
+- **Safety**: Blocks DROP/DELETE/UPDATE/INSERT and injection patterns before execution.
 
 ---
 
@@ -121,8 +119,8 @@ decision-intelligence-bi-assistant/
 ### Step 1 — Clone
 
 ```bash
-git clone https://github.com/yourusername/decision-intelligence-bi-assistant.git
-cd decision-intelligence-bi-assistant
+git clone https://github.com/Tilakkale/Decision-BI-Assistant.git
+cd Decision-BI-Assistant
 ```
 
 ---
@@ -214,20 +212,6 @@ npx vercel --prod
 - Free tier: 500MB, sufficient for this project
 - Use **Transaction mode (port 6543)** in DATABASE_URL for Railway compatibility
 
----
-
-## Technical Highlights (Recruiter FAQ)
-
-### How is the "Self-Healing" implemented?
-The backend maintains a retry loop. If `asyncpg` throws an error (e.g., "column does not exist"), the error message + the failed SQL are wrapped in a **Repair Prompt** and sent back to Groq. The AI identifies its own mistake, corrects the SQL, and the backend retries the execution.
-
-### How do you handle LLM Hallucinations in SQL?
-Beyond the self-healing loop, we use a **Semantic Dictionary (`dictionary.json`)**. This file acts as a "Source of Truth" for the AI, mapping common business terms (like "churned customer") to exact SQL snippets. This significantly reduces hallucinations and ensures the AI follows company-specific logic.
-
-### Why SSE instead of WebSockets?
-Server-Sent Events (SSE) provide a lighter, unidirectional stream from the server to the client. It's more efficient for ChatGPT-style responses where we only need to push updates (SQL typing, status steps, results) without the overhead of full duplex communication.
-
----
 
 ## Demo Walkthrough
 
@@ -244,56 +228,6 @@ Server-Sent Events (SSE) provide a lighter, unidirectional stream from the serve
 | 9 | Ask a bad question | Triggers self-heal — see ⚡ badge |
 | 10 | Click hamburger | History drawer shows all queries |
 
----
-
-## The 4 Senior-Level Features Explained
-
-### 1. Agentic Self-Healing Loop
-```
-User question
-     ↓
-LLM generates SQL
-     ↓
-asyncpg executes
-     ↓ (if error)
-Error + failed SQL → LLM repair prompt
-     ↓
-Repaired SQL → retry (max 2×)
-     ↓
-Success or final error
-```
-
-### 2. Semantic Metadata Layer
-`dictionary.json` defines business concepts in SQL:
-```json
-"churned_customer": {
-  "sql": "id NOT IN (SELECT DISTINCT customer_id FROM orders WHERE order_date >= CURRENT_DATE - INTERVAL '90 days')"
-}
-```
-The AI reads this file on every request and uses the exact SQL expressions — not a guess.
-
-### 3. PII Masking
-```
-User question: "Show orders for john.smith@corp.com"
-                              ↓  mask_text()
-Sent to LLM:  "Show orders for [EMAIL:A3F2B1C4]"
-```
-Result rows sent to AI for narrative also have names/emails hashed.
-
-### 4. SSE Streaming
-```
-POST /api/query → StreamingResponse
-  event: step    {"id":1, "status":"active"}
-  event: step    {"id":1, "status":"done"}
-  event: sql     {"query":"SELECT..."}
-  event: data    {"rows":[...]}
-  event: insights {...}
-  event: narrative {"text":"Revenue grew..."}
-  event: done    {"total_ms":1240}
-```
-Frontend `useSSEStream` hook reads each event type and updates state in real time.
-
----
 
 ## Future Improvements
 
